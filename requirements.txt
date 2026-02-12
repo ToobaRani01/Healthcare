@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 mysql-connector-python
 flask
 werkzeug
@@ -13,19 +12,4 @@ matplotlib
 seaborn
 tensorflow
 scikit-learn
-=======
-mysql-connector-python
-flask
-werkzeug
-markupsafe
-markdown
-openai
-google-generativeai
-pillow
-pandas
-numpy
-matplotlib
-seaborn
-tensorflow
-scikit-learn
->>>>>>> a8546f2a6cea2f91f7352c3b51a62e9167232770
+h5py
