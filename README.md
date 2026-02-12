@@ -20,6 +20,21 @@ A comprehensive healthcare assistant that combines **Google Gemini API** for sym
 
 ---
 
+## 📌 Model File Placement Instructions
+
+### ⚠️ Important Notice
+- Due to GitHub’s **100MB file size limit**, the specialized skin disease model file (`skin_disease_final_model_2.h5`) is **not included directly in the repository**.
+
+### 📥 Download Link
+You can download the model from Google Drive:  
+[Google Drive Folder](https://drive.google.com/drive/folders/1ElVWr9gdHfJuTtXc0j69YsiP35gklkHu?usp=sharing)
+
+### 📂 Placement
+Once downloaded, place the file directly into the **root directory** of your project.
+
+---
+
+
 ## 🌟 Project Overview
 This chatbot provides a preliminary medical diagnosis based on user-described symptoms and uploaded medical images. It uses a **hybrid AI approach**:
 1.  **Local Deep Learning Models**: For specialized medical image classification (Pneumonia & Skin Diseases).
