@@ -168,10 +168,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // 2. Severity Level with Badge
         // Consumes the standard "severe condition" warning sentence if it follows, to prevent duplication
-        html = html.replace(/(?:\*\*|<strong>)?Severity Level:?(?:\*\*|<\/strong>)?\s*(Mild|Moderate|Severe)(?:\.?\s*This is a severe condition and should be treated\/referred rather than managed at home\.?)?/gi, (match, level) => {
-            const lcLevel = level.toLowerCase();
+        // Also strips leading color words like "Green ", "Yellow ", "Red " etc.
+        html = html.replace(/(?:\*\*|<strong>)?Severity Level:?(?:\*\*|<\/strong>)?\s*(?:Green\s+|Yellow\s+|Red\s+)?(Mild|Moderate|Severe|Risk)(?:\.?\s*This is a severe condition and should be treated\/referred rather than managed at home\.?)?/gi, (match, level) => {
+            let lcLevel = level.toLowerCase();
+            if (lcLevel === 'severe') lcLevel = 'risk'; // Map severe to risk class
             let advice = "";
-            if (lcLevel === 'severe') advice = '<div class="severe-warning">⚠️ This is a severe condition and should be treated/referred rather than managed at home.</div>';
+            if (lcLevel === 'risk') advice = '<div class="severe-warning">⚠️ This is a severe condition and should be treated/referred rather than managed at home.</div>';
             return `<span class="diagnosis-section-title">Severity Level:</span> <span class="severity-badge severity-${lcLevel}">${level}</span>${advice}`;
         });
 

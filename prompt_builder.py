@@ -33,7 +33,7 @@ This may include symptoms, test results, medical reports, scan findings, or if t
 [Write ONLY the name of the disease or condition. Example: "Common Cold". Also provide the estimated probability of this diagnosis in percentage (e.g., "85%"). Format: [Diagnosis Name] ([Probability]%) ]
 
 **Severity Level:**
-[Indicate the severity: Mild, Moderate, or Severe. If Severe, you MUST add this exact sentence: "This is a severe condition and should be treated/referred rather than managed at home." Color code recommendation: Green for Mild, Yellow for Moderate, Red for Severe.]
+[Indicate the severity: Mild, Moderate, or Risk. If Risk, you MUST add this exact sentence: "This is a severe condition and should be treated/referred rather than managed at home." Respond ONLY with the level name.]
 
 **Treatment:**
 [Explain treatment in simple, easy-to-understand language. What should the patient do? 2-3 sentences max.]

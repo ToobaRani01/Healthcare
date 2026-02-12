@@ -29,6 +29,8 @@
     /* Deep Orange/Amber for better contrast */
     --severity-severe: #991b1b;
     /* Deeper Red */
+    --severity-risk: #dc2626;
+    /* Red-600 */
 }
 
 /* ---------------------------------------------------------------------------------- */
@@ -758,8 +760,14 @@ h3 {
     color: #ffffff !important;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: none;
+    cursor: default;
+    transition: transform 0.2s;
+}
+
+.severity-badge:hover {
+    transform: translateY(-1px);
 }
 
 .severity-mild {
@@ -770,8 +778,9 @@ h3 {
     background-color: var(--severity-moderate);
 }
 
-.severity-severe {
-    background-color: var(--severity-severe);
+.severity-severe,
+.severity-risk {
+    background-color: var(--severity-risk);
 }
 
 .diagnosis-probability {

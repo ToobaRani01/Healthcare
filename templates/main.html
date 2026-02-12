@@ -70,7 +70,7 @@
             {% for message in history %}
             {% set role_class = 'user' if message.role == 'user' else 'ai' %}
 
-            {# 🚨 CHANGE 1: AI avatar changed from 'E' to '🤖' for pre-rendered messages #}
+
             {% set avatar_char = username[0] | upper if message.role == 'user' and username else 'Y' if message.role ==
             'user' else '🤖' %}
 
@@ -134,7 +134,7 @@
             {% endif %}
 
             <div id="typingIndicator" class="message ai-message typing-indicator-wrapper" style="display: none;">
-                {# 🚨 CHANGE 2: Typing indicator avatar changed from 'E' to '🤖' #}
+
                 <div class="avatar ai-avatar">🤖</div>
                 <div class="message-content-wrapper">
                     <div class="message-bubble">

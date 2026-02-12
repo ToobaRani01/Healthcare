@@ -34,7 +34,6 @@ Once downloaded, place the file directly into the **root directory** of your pro
 
 ---
 
-
 ## 🌟 Project Overview
 This chatbot provides a preliminary medical diagnosis based on user-described symptoms and uploaded medical images. It uses a **hybrid AI approach**:
 1.  **Local Deep Learning Models**: For specialized medical image classification (Pneumonia & Skin Diseases).
