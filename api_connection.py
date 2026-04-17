@@ -171,7 +171,7 @@ def reset_chat_history(user_id):
 
 # --- Main AI Function ---
 
-def get_gemini_response(user_id, user_text, pil_image=None, image_filename=None):
+def get_gemini_response(user_id, user_text, pil_image=None, image_filename=None, audio_filename=None):
     """
     Sends a query and an optional image to the Gemini API and returns the response.
     This is the main entry point for chat interactions.
@@ -239,6 +239,26 @@ def get_gemini_response(user_id, user_text, pil_image=None, image_filename=None)
 
         if pil_image:
             user_parts.append(pil_image)
+
+        if audio_filename:
+            try:
+                audio_path = os.path.join(UPLOAD_FOLDER, audio_filename)
+                with open(audio_path, 'rb') as f:
+                    audio_data = f.read()
+                
+                # Determine mime type
+                mime_type = 'audio/webm'
+                if audio_filename.endswith('.wav'):
+                    mime_type = 'audio/wav'
+                elif audio_filename.endswith('.mp3'):
+                    mime_type = 'audio/mpeg'
+                
+                user_parts.append({
+                    "mime_type": mime_type,
+                    "data": audio_data
+                })
+            except Exception as e:
+                print(f"Warning: Failed to load audio {audio_filename} for API: {e}")
 
         if not user_parts:
             return {"content": "No query or image provided.", "metadata": {"status": "mocked"}}

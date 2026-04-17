@@ -206,6 +206,7 @@ def chat():
         # --- IMAGE HANDLING LOGIC ---
         image_file = request.files.get('image')
         image_filename = None
+        audio_filename = None
         
         if image_file and image_file.filename:
             # Validate filename + extension
@@ -228,15 +229,78 @@ def chat():
             # 2. Open the saved file into a PIL object for the API call
             pil_image = Image.open(file_path)
             
-        # --- CRITICAL CHECK: ONLY BLOCK IF BOTH ARE MISSING ---
-        if not query and not pil_image:
+        # --- CRITICAL CHECK: ALLOW audio OR image-only or text-only requests ---
+        audio_file = request.files.get('audio')
+        if not query and not pil_image and not audio_file:
             # Clean up the file if no query was provided
             if file_path and os.path.exists(file_path):
                 os.remove(file_path)
             return jsonify({"content": "Please enter a query or upload an image.", "role": "error_client"}), 200
+
+        # If an audio file was uploaded, save it and attempt server-side transcription.
+        transcript = ''
+        audio_filename = None
+        if audio_file and audio_file.filename:
+            try:
+                # Save audio file
+                aext = os.path.splitext(audio_file.filename)[1] or '.webm'
+                atimestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+                audio_filename = f"user_{user_id}_{atimestamp}{aext}"
+                audio_path = os.path.join(app.config['UPLOAD_FOLDER'], audio_filename)
+                audio_file.save(audio_path)
+
+                # Convert to WAV for transcription if necessary
+                wav_path = os.path.join(app.config['UPLOAD_FOLDER'], f"user_{user_id}_{atimestamp}.wav")
+                def _convert_to_wav(inp, outp):
+                    # Try pydub first
+                    try:
+                        from pydub import AudioSegment
+                        AudioSegment.from_file(inp).export(outp, format='wav')
+                        return True
+                    except Exception:
+                        pass
+                    # Fallback: try ffmpeg via subprocess
+                    try:
+                        import subprocess
+                        subprocess.run(["ffmpeg", "-y", "-i", inp, outp], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        return True
+                    except Exception:
+                        return False
+
+                converted = _convert_to_wav(audio_path, wav_path)
+
+                # Try Whisper if available, otherwise use SpeechRecognition (Google) as fallback
+                try:
+                    try:
+                        import whisper
+                        model = whisper.load_model("small")
+                        res = model.transcribe(wav_path if converted else audio_path)
+                        transcript = res.get('text', '').strip()
+                    except Exception:
+                        # Try speech_recognition fallback
+                        import speech_recognition as sr
+                        r = sr.Recognizer()
+                        with sr.AudioFile(wav_path if converted else audio_path) as source:
+                            audio_data = r.record(source)
+                        transcript = r.recognize_google(audio_data)
+                except Exception as e:
+                    print(f"Audio transcription failed: {e}")
+                    transcript = ''
+
+                # If transcription succeeded and query is empty, set query to transcript
+                if transcript and not query:
+                    query = transcript
+
+                # If transcription failed but we have an audio file, we'll pass the file itself to the AI function
+                # as Gemini supports audio analysis directly.
+                if audio_file and not transcript and not query:
+                    print("Notice: Server transcription failed, will attempt multi-modal audio analysis.")
+
+            except Exception as e:
+                print(f"Error handling uploaded audio: {e}")
         
         # 3. Call the AI function
-        ai_message = get_gemini_response(user_id, query, pil_image, image_filename) 
+        ai_message = get_gemini_response(user_id, query, pil_image, image_filename, audio_filename) 
 
         # 4. Prepare the final JSON response for the frontend
         response_data = {
