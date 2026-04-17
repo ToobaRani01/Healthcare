@@ -151,4 +151,4 @@ Open `http://localhost:5000` in your browser.
 > This application is for **informational and educational purposes only**. It does not provide medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.
 
 ---
-**Developed with ❤️ to bridge the gap between AI and Healthcare.**
+**Developed by Tooba rani
