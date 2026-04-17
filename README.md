@@ -60,21 +60,32 @@ This chatbot provides a preliminary medical diagnosis based on user-described sy
 
 ## 🔄 Kaise Kaam Karta Hai - Complete Flow
 
-### **1. Image Analysis Pipeline**
+### **1. Image & Audio Pipeline (concise)**
 ```mermaid
 graph TD
-    A[Image Uploaded] --> B{Image Type Detection}
+    Input[User Input] --> Text[Text Query]
+    Input --> Image[Image Upload]
+    Input --> Voice[Voice Recording (Browser)]
+
+    Voice --> UploadAudio[Upload Audio]
+    UploadAudio --> TR{Server Transcribed?}
+    TR -- Yes --> TXT[Transcript]
+    TR -- No --> RAW[Raw audio to Gemini]
+
+    Image --> B{Image Type Detection}
     B -- "Chest X-ray" --> C[Pneumonia Model]
     B -- "Skin Image" --> D[Skin Disease Model]
     B -- "Unknown" --> E[Direct to Gemini]
-    
-    C --> F[Confidence Score & Label]
-    D --> G[Disease Classification]
-    
-    F --> H[Combined Prompt Construction]
-    G --> H
-    E --> H
-    
+
+    C --> F[Model Insights]
+    D --> F
+    E --> F
+
+    TXT --> H[Combined Prompt Construction]
+    RAW --> H
+    Text --> H
+    F --> H
+
     H --> I[Google Gemini API]
     I --> J[Final Medical Report]
 ```
@@ -84,6 +95,7 @@ graph TD
 #### **Stage 1: Input Handling**
 - **Image Upload:** System detects the image type based on resolution and aspect ratio (e.g., wider images are often Chest X-rays).
 - **Text Query:** `symptom_detector.py` checks if the query contains medical keywords.
+- **Voice Input:** Users can record audio directly through the UI. The client may also generate a silent transcript using the browser `SpeechRecognition` API; the audio file and the silent transcript (if available) are uploaded to the server.
 
 #### **Stage 2: Processing**
 - **Local Analysis:** 
@@ -92,10 +104,15 @@ graph TD
 - **Fallback:** If local models fail or the image type is unknown, the system relies on Gemini's native vision capabilities.
 
 #### **Stage 3: Synthesis (API Call)**
-The system sends three critical pieces of information to Gemini:
-1.  **Original Image:** For Gemini's vision analysis.
+The system sends multiple data streams to Gemini. The `prompt_builder.py` composes the final message depending on what's available:
+
+1.  **Original Image:** For Gemini's vision analysis (if uploaded).
 2.  **Model Insights:** The classification result from our local specialized models (used as "expert hints").
-3.  **User Symptoms:** Any text description provided by the patient.
+3.  **User Symptoms / Transcript:** If a voice message was recorded the server attempts transcription (order: `whisper` -> `SpeechRecognition`).
+  - If transcription succeeds: include the transcript text in the prompt and save it for records.
+  - If transcription fails: include the raw audio file for Gemini's multimodal audio analysis and ask Gemini to summarize/convert to text.
+
+4.  **Client Silent Transcript:** If the browser produced a silent transcript, it's sent as an assistive hint but the server-side transcript (if any) is authoritative.
 
 #### **Stage 4: Final Output**
 Gemini generates a structured response containing:
