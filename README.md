@@ -42,7 +42,8 @@ This chatbot provides a preliminary medical diagnosis based on user-described sy
 ### **Key Features**
 - **Symptom Detection**: Automatically identifies if a user's query is medical-related.
 - **Image Analysis**: Classifies Chest X-rays and Skin conditions locally.
-- **Multimodal AI**: Combines visual data, local model insights, and user text into a final Gemini-powered report.
+- **Voice Interaction**: Record and send voice messages for hands-free symptom reporting.
+- **Multimodal AI**: Combines visual data, audio inputs, local model insights, and user text into a final Gemini-powered report.
 - **Conversation Tracking**: Full thread management with persistent database storage.
 
 ---
@@ -50,9 +51,10 @@ This chatbot provides a preliminary medical diagnosis based on user-described sy
 ## 🛠 Tech Stack
 - **Backend:** Python, Flask
 - **Artificial Intelligence:** 
-  - Google Gemini API (Multimodal)
+  - Google Gemini API (Multimodal: Text, Image, Audio)
   - TensorFlow/Keras (CNNs for medical imaging)
-- **Database:** MySQL
+- **Voice Processing:** Web Audio API, MediaRecorder, Gemini Multimodal Audio, Whisper (Optional)
+- **Database:** MySQL / SQLite
 - **Frontend:** HTML5, CSS3 (Modern UI), JavaScript (ES6)
 - **Image Processing:** PIL (Pillow), NumPy
 
@@ -65,7 +67,7 @@ This chatbot provides a preliminary medical diagnosis based on user-described sy
 graph TD
     Input[User Input] --> Text[Text Query]
     Input --> Image[Image Upload]
-    Input --> Voice[Voice Recording (Browser)]
+    Input --> Voice["Voice Recording (Browser)"]
 
     Voice --> UploadAudio[Upload Audio]
     UploadAudio --> TR{Server Transcribed?}
@@ -90,39 +92,6 @@ graph TD
     I --> J[Final Medical Report]
 ```
 
-### **2. Complete Logical Steps**
-
-#### **Stage 1: Input Handling**
-- **Image Upload:** System detects the image type based on resolution and aspect ratio (e.g., wider images are often Chest X-rays).
-- **Text Query:** `symptom_detector.py` checks if the query contains medical keywords.
-- **Voice Input:** Users can record audio directly through the UI. The client may also generate a silent transcript using the browser `SpeechRecognition` API; the audio file and the silent transcript (if available) are uploaded to the server.
-
-#### **Stage 2: Processing**
-- **Local Analysis:** 
-  - If a **Chest X-ray** is detected, `pneumonia_classification_model.h5` predicts 'Normal' or 'Pneumonia'.
-  - If a **Skin Image** is detected, `skin_disease_final_model_2.h5` classifies the specific condition (e.g., Melanoma).
-- **Fallback:** If local models fail or the image type is unknown, the system relies on Gemini's native vision capabilities.
-
-#### **Stage 3: Synthesis (API Call)**
-The system sends multiple data streams to Gemini. The `prompt_builder.py` composes the final message depending on what's available:
-
-1.  **Original Image:** For Gemini's vision analysis (if uploaded).
-2.  **Model Insights:** The classification result from our local specialized models (used as "expert hints").
-3.  **User Symptoms / Transcript:** If a voice message was recorded the server attempts transcription (order: `whisper` -> `SpeechRecognition`).
-  - If transcription succeeds: include the transcript text in the prompt and save it for records.
-  - If transcription fails: include the raw audio file for Gemini's multimodal audio analysis and ask Gemini to summarize/convert to text.
-
-4.  **Client Silent Transcript:** If the browser produced a silent transcript, it's sent as an assistive hint but the server-side transcript (if any) is authoritative.
-
-#### **Stage 4: Final Output**
-Gemini generates a structured response containing:
-- **Diagnosis:** Possible health condition.
-- **Probability:** Estimated certainty.
-- **Severity:** (Mild/Moderate/Severe).
-- **Medication:** Suggested OTC or general advice.
-- **Next Steps:** Recommendation for clinical consultation.
-
----
 
 ## 🚀 Installation & Setup
 
@@ -167,10 +136,12 @@ Open `http://localhost:5000` in your browser.
 
 ## 📂 File Structure
 - `app.py`: Main entry point and Flask routes.
-- `api_connection.py`: Orchestrator between models and Gemini.
-- `image_analyzer.py`: Image preprocessing and local ML execution.
+- `api_connection.py`: Orchestrator between models and Gemini (Handles Multimodal inputs).
+- `api_handler.py`: Low-level Gemini API interaction and session management.
+- `image_analyzer.py`: Image preprocessing and local ML execution (TensorFlow).
+- `static/js/main.js`: Frontend logic for chat UI, file uploads, and **Voice Recording**.
 - `db_manager.py`: Database table creation and maintenance.
-- `promt_builder.py`: Constructs complex instructions for Gemini.
+- `prompt_builder.py`: Constructs complex instructions for Gemini.
 - `response_parser.py`: Extracts data from AI responses for DB storage.
 
 ---
